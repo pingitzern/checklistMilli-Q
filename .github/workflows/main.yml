@@ -1,16 +1,22 @@
-- name: Instalar Homebrew
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y build-essential procps curl file git
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> $GITHUB_ENV
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+name: Instalar Supabase CLI
 
-- name: Instalar Supabase CLI con Homebrew
-  run: |
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-    brew install supabase/tap/supabase
-    echo "$(/home/linuxbrew/.linuxbrew/bin/brew --prefix)/bin" >> $GITHUB_PATH
+on:
+  workflow_dispatch:
 
-- name: Verificar instalación
-  run: supabase --version
+jobs:
+  install-supabase-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Descargar Supabase CLI
+        run: |
+          SUPABASE_VERSION=$(curl -s https://api.github.com/repos/supabase/cli/releases/latest | grep tag_name | cut -d '"' -f 4 | sed 's/v//')
+          wget https://github.com/supabase/cli/releases/download/v${SUPABASE_VERSION}/supabase_linux_amd64.tar.gz
+          tar -xzf supabase_linux_amd64.tar.gz
+          chmod +x supabase
+          sudo mv supabase /usr/local/bin/supabase
+
+      - name: Verificar instalación
+        run: supabase --version
