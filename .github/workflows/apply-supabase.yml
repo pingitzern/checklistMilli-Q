@@ -31,17 +31,17 @@ jobs:
       - name: Seed ATLANTIS (catalog)
         if: ${{ hashFiles('supabase/seed/0001_atlantis.sql') != '' }}
         # --- CORRECCIÓN AQUÍ ---
-        run: supabase sql --db-url "$DB_URL" < supabase/seed/0001_atlantis.sql
+        run: psql "$DB_URL" -f supabase/seed/0001_atlantis.sql
 
       - name: Seed demo (clients/equipment/WO)
         if: ${{ hashFiles('supabase/seed/0002_demo_data.sql') != '' }}
         # --- CORRECCIÓN AQUÍ ---
-        run: supabase sql --db-url "$DB_URL" < supabase/seed/0002_demo_data.sql
+        run: psql "$DB_URL" -f supabase/seed/0002_demo_data.sql
 
       - name: Verify counts
         # --- CORRECCIÓN AQUÍ ---
         run: |
-          supabase sql --db-url "$DB_URL" <<'SQL'
+          psql "$DB_URL" <<'SQL'
           select 'familias' as table, count(*) from product_family
           union all
           select 'modelos' , count(*) from product_model
