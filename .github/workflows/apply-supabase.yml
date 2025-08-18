@@ -1,31 +1,37 @@
 name: Apply Supabase migrations & seeds
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/seed/**'
+      - '.github/workflows/apply-supabase.yml'
 jobs:
   apply:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
         with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+          version: latest
+      - name: Construct DB URL
+        run: |
+          DB_URL="postgresql://postgres:${{ secrets.SUPABASE_DB_PASSWORD }}@db.${{ secrets.SUPABASE_PROJECT_ID }}.${{ secrets.SUPABASE_DB_HOST }}:5432/postgres"
+          echo "DB_URL=$DB_URL" >> $GITHUB_ENV
       - name: Apply migrations
-        run: npx supabase db push
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase db push --db-url "$DB_URL"
       - name: Seed data
-        run: npx supabase db seed
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$DB_URL" -f supabase/seed/0001_atlantis.sql
+          psql "$DB_URL" -f supabase/seed/0002_demo_data.sql
       - name: Verify counts
         run: |
-          psql $SUPABASE_DB_URL -c "SELECT COUNT(*) FROM familias;"
-          psql $SUPABASE_DB_URL -c "SELECT COUNT(*) FROM modelos;"
-          psql $SUPABASE_DB_URL -c "SELECT COUNT(*) FROM consumibles;"
-          psql $SUPABASE_DB_URL -c "SELECT COUNT(*) FROM templates_mp;"
-          psql $SUPABASE_DB_URL -c "SELECT COUNT(*) FROM wo;"
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          psql "$DB_URL" -c "SELECT COUNT(*) FROM familias;"
+          psql "$DB_URL" -c "SELECT COUNT(*) FROM modelos;"
+          psql "$DB_URL" -c "SELECT COUNT(*) FROM consumibles;"
+          psql "$DB_URL" -c "SELECT COUNT(*) FROM templates_mp;"
+          psql "$DB_URL" -c "SELECT COUNT(*) FROM wo;"
 
