@@ -1,0 +1,32 @@
+# Nombre de tu flujo de trabajo. Puedes ponerle lo que quieras.
+name: Instalar y Probar Supabase CLI
+
+# Esto le dice a GitHub cuándo debe ejecutar este flujo de trabajo.
+# En este caso, se ejecutará cada vez que hagas un "push" (subas cambios) a tu rama principal (main).
+on:
+  push:
+    branches:
+      - main
+
+# Aquí se definen los "trabajos" que se van a realizar.
+jobs:
+  # Nombramos nuestro trabajo como "test-supabase-cli".
+  test-supabase-cli:
+    # Le decimos a GitHub que use una máquina virtual con la última versión de Ubuntu.
+    runs-on: ubuntu-latest
+
+    # Estos son los pasos que se ejecutarán en orden.
+    steps:
+      # Paso 1: Descargar tu código del repositorio a la máquina virtual.
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      # Paso 2: Usar la "Action" oficial de Supabase para instalar la CLI.
+      - name: Instalar Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest # Puedes especificar una versión si lo necesitas.
+
+      # Paso 3: Verificar que la CLI se instaló correctamente.
+      - name: Verificar la versión de Supabase CLI
+        run: supabase --version
