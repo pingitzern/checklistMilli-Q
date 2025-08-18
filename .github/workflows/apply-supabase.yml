@@ -14,9 +14,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Apply migrations
-        run: npx supabase db push
+        run: npm run db:push
       - name: Seed data
-        run: npx supabase db seed
+        run: npm run db:seed
       - name: Verify counts
         run: |
           psql $SUPABASE_DB_URL -c "SELECT COUNT(*) FROM familias;"
