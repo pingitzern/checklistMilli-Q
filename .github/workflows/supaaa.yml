@@ -1,32 +1,37 @@
-# Nombre de tu flujo de trabajo. Puedes ponerle lo que quieras.
-name: Instalar y Probar Supabase CLI
+# Nombre de tu flujo de trabajo.
+name: Desplegar Migraciones a Supabase
 
-# Esto le dice a GitHub cuándo debe ejecutar este flujo de trabajo.
-# En este caso, se ejecutará cada vez que hagas un "push" (subas cambios) a tu rama principal (main).
+# Se ejecutará cada vez que hagas un "push" a tu rama principal.
 on:
   push:
     branches:
       - main
 
-# Aquí se definen los "trabajos" que se van a realizar.
+# Trabajos a realizar.
 jobs:
-  # Nombramos nuestro trabajo como "test-supabase-cli".
-  test-supabase-cli:
-    # Le decimos a GitHub que use una máquina virtual con la última versión de Ubuntu.
+  deploy-migrations:
     runs-on: ubuntu-latest
 
-    # Estos son los pasos que se ejecutarán en orden.
     steps:
-      # Paso 1: Descargar tu código del repositorio a la máquina virtual.
+      # Paso 1: Descargar tu código.
       - name: Checkout del código
         uses: actions/checkout@v3
 
-      # Paso 2: Usar la "Action" oficial de Supabase para instalar la CLI.
+      # Paso 2: Instalar la CLI de Supabase. (Este paso es el mismo de antes)
       - name: Instalar Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest # Puedes especificar una versión si lo necesitas.
+          version: latest
 
-      # Paso 3: Verificar que la CLI se instaló correctamente.
-      - name: Verificar la versión de Supabase CLI
-        run: supabase --version
+      # ¡NUEVO! Paso 3: Vincular el proyecto (requiere el token de acceso).
+      # El comando 'supabase link' no es interactivo aquí; se usa el flag --project-ref
+      # que deberás añadir a tus variables de entorno si lo necesitas.
+      # Una forma más directa es usar 'db push' que usa las variables de entorno.
+      
+      # ¡NUEVO y MEJORADO! Paso 3: Aplicar las migraciones de la base de datos.
+      - name: Aplicar migraciones de la base de datos
+        run: supabase db push
+        env:
+          # Aquí le pasamos los secrets que creamos a la CLI.
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
