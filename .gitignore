@@ -1,0 +1,13 @@
+# node / next
+node_modules/
+.next/
+out/
+dist/
+.env
+.env.*
+# supabase
+supabase/.temp/
+.supabase/
+# system
+.DS_Store
+Thumbs.db
