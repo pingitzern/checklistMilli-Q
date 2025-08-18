@@ -13,18 +13,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # --- CAMBIO IMPORTANTE ---
-      # Reemplazamos la instalación por NPM con la acción oficial y recomendada.
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v1
         with:
           version: latest
 
-      # El resto de tu código está perfecto y no necesita cambios.
       - name: Build DB URL (Supabase pooled connection)
         env:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          # Usamos el Project Ref para construir el usuario del pooler.
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
         run: |
           echo "DB_URL=postgresql://postgres.${SUPABASE_PROJECT_ID}:${SUPABASE_DB_PASSWORD}@aws-1-sa-east-1.pooler.supabase.com:6543/postgres" >> $GITHUB_ENV
@@ -34,15 +30,18 @@ jobs:
 
       - name: Seed ATLANTIS (catalog)
         if: ${{ hashFiles('supabase/seed/0001_atlantis.sql') != '' }}
-        run: supabase db query --db-url "$DB_URL" < supabase/seed/0001_atlantis.sql
+        # --- CORRECCIÓN AQUÍ ---
+        run: supabase query --db-url "$DB_URL" < supabase/seed/0001_atlantis.sql
 
       - name: Seed demo (clients/equipment/WO)
         if: ${{ hashFiles('supabase/seed/0002_demo_data.sql') != '' }}
-        run: supabase db query --db-url "$DB_URL" < supabase/seed/0002_demo_data.sql
+        # --- CORRECCIÓN AQUÍ ---
+        run: supabase query --db-url "$DB_URL" < supabase/seed/0002_demo_data.sql
 
       - name: Verify counts
+        # --- CORRECCIÓN AQUÍ ---
         run: |
-          supabase db query --db-url "$DB_URL" <<'SQL'
+          supabase query --db-url "$DB_URL" <<'SQL'
           select 'familias' as table, count(*) from product_family
           union all
           select 'modelos' , count(*) from product_model
