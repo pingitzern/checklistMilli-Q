@@ -9,16 +9,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Set DB URL
+        run: echo "SUPABASE_DB_URL=postgresql://postgres:${{ secrets.SUPABASE_DB_PASSWORD }}@db.${{ secrets.SUPABASE_PROJECT_ID }}.supabase.co:5432/postgres" >> $GITHUB_ENV
       - name: Install dependencies
         run: npm ci
       - name: Apply migrations
         run: npx supabase db push
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       - name: Seed data
         run: npx supabase db seed
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       - name: Verify counts
         run: |
           psql $SUPABASE_DB_URL -c "SELECT COUNT(*) FROM familias;"
@@ -26,6 +24,3 @@ jobs:
           psql $SUPABASE_DB_URL -c "SELECT COUNT(*) FROM consumibles;"
           psql $SUPABASE_DB_URL -c "SELECT COUNT(*) FROM templates_mp;"
           psql $SUPABASE_DB_URL -c "SELECT COUNT(*) FROM wo;"
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-
