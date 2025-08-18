@@ -1,0 +1,48 @@
+name: Apply Supabase migrations & seeds
+on:
+  workflow_dispatch:
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Supabase CLI
+        run: npm i -g supabase@latest
+
+      - name: Build DB URL (Supabase pooled connection)
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          echo "DB_URL=postgresql://postgres:${SUPABASE_DB_PASSWORD}@aws-1-sa-east-1.pooler.supabase.com:6543/postgres" >> $GITHUB_ENV
+
+      - name: Apply migrations
+        run: supabase db push --db-url "$DB_URL"
+
+      - name: Seed ATLANTIS (catalog)
+        if: ${{ hashFiles('supabase/seed/0001_atlantis.sql') != '' }}
+        run: supabase db query --db-url "$DB_URL" < supabase/seed/0001_atlantis.sql
+
+      - name: Seed demo (clients/equipment/WO)
+        if: ${{ hashFiles('supabase/seed/0002_demo_data.sql') != '' }}
+        run: supabase db query --db-url "$DB_URL" < supabase/seed/0002_demo_data.sql
+
+      - name: Verify counts
+        run: |
+          supabase db query --db-url "$DB_URL" <<'SQL'
+          select 'familias' as table, count(*) from product_family
+          union all
+          select 'modelos' , count(*) from product_model
+          union all
+          select 'consumibles', count(*) from consumable
+          union all
+          select 'templates_mp', count(*) from service_template
+          union all
+          select 'wo', count(*) from work_order;
+          SQL
