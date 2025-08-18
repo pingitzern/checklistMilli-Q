@@ -1,0 +1,12 @@
+{
+  "name": "checklistmilli-q",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "db:push": "supabase db push",
+    "db:seed": "supabase db seed"
+  },
+  "devDependencies": {
+    "supabase": "^2.34.3"
+  }
+}
