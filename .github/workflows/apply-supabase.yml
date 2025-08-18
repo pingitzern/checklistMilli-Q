@@ -1,6 +1,11 @@
 name: Apply Supabase migrations & seeds
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/seed/**'
+      - '.github/workflows/apply-supabase.yml'
 jobs:
   apply:
     runs-on: ubuntu-latest
