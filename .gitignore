@@ -5,7 +5,6 @@ out/
 dist/
 .env
 .env.*
-!.env.example
 # supabase
 supabase/.temp/
 .supabase/
